@@ -11,15 +11,17 @@ from detectColor import findColor
 from camSet import clickImage
 from camSet import processImage1
 from camSet import processImage
+
 class Direction:
     NORTH = 0
     WEST = 1
     SOUTH =2
     EAST = 3
 
+wheelError = .1
 
 class Driver:
-    def __init__(self, x, y, binman,  port="/dev/ttyUSB0"):
+    def __init__(self, x, y, binman,  port="/dev/ttyUSB1"):
         self.xpos = x;
         self.ypos=y;
         self.orientation = Direction.NORTH
@@ -53,7 +55,7 @@ class Driver:
             right = self.robot.sensors([create.ENCODER_RIGHT])[44]
             dleft = left-lastLeft
             dright=right-lastRight
-            print ( "Encoder deltas: Left, Right: " , dleft ,dright)
+            #print ( "Encoder deltas: Left, Right: " , dleft ,dright)
 
             if dleft > -10000 and dleft  <10000 and dright > -10000 and dright < 10000:   
                 if dright > dleft :
@@ -74,8 +76,8 @@ class Driver:
                
             
             
-            print("Left WV = ", float(speedL/10), ", Right WV = " , float(speedR)/10)
-            self.robot.setWheelVelocities(  speedL/float(10), speedR/float(10))
+            #print("Left WV = ", float(speedL/10), ", Right WV = " , float(speedR)/10)
+            self.robot.setWheelVelocities(  speedL/float(10), speedR/float(10)+wheelError)
             
             
 
@@ -85,23 +87,26 @@ class Driver:
                                      create.CLIFF_FRONT_RIGHT_SIGNAL,
                                      create.CLIFF_RIGHT_SIGNAL])
             print "BL IR Sensor - " , info[28] , "BR IR Sensor - " , info[31]
-            if distance-currDist < distance-10 : #and currDist-startDist > 10:
+            if distance-currDist > 6 : #and currDist-startDist > 10:
                 #only inspect when in middle of square, otherwise cross lines mess this up
-                if info[29] < 2400:
+                if info[29] < 2400 and info[30] > 2400:
                      #turned too much right, so turn right wheel hard
                      self.robot.setWheelVelocities(  speed/float(10), speed/float(10)+5)
                      print ("******************see left line****************")
                      sleep(.1)
                      lastLeft = self.robot.sensors([create.ENCODER_LEFT])[43]
                      lastRight = self.robot.sensors([create.ENCODER_RIGHT])[44]
-                if info[30] < 2400:
+                if info[30] < 2400 and info[29] > 2400:
                     #turned too much left, so turn left wheel hard
                     self.robot.setWheelVelocities(  speed/float(10)+5, speed/float(10))
                     print ("*********************see rightline************************")
                     sleep(.1)
                     lastLeft = self.robot.sensors([create.ENCODER_LEFT])[43]
                     lastRight = self.robot.sensors([create.ENCODER_RIGHT])[44]
-            
+            info = self.robot.sensors([create.CLIFF_LEFT_SIGNAL,
+                         create.CLIFF_FRONT_LEFT_SIGNAL,
+                         create.CLIFF_FRONT_RIGHT_SIGNAL,
+                         create.CLIFF_RIGHT_SIGNAL])
             if info[28] <2400 or info[31] <2400 :
                 print "BL IR Sensor - " , info[28] , "BR IR Sensor - " , info[31]
                 #if either the back left or back right sensor see a line, stop
@@ -117,7 +122,7 @@ class Driver:
                       s=2
                       
                 #if doing line-based stopping
-                if (type == 2 or type == 1)and currDist > 20:
+                if (type == 2 or type == 1)and currDist > 12:
                     #see a line
                     #self.robot.stop()
                     print ("!!!!!!!!!!!!!!!!!!!!!!!!!!!hit!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -169,7 +174,7 @@ class Driver:
                         lastRight = self.robot.sensors([create.ENCODER_RIGHT])[44]
             #if distance based stopping, then we need to sleep longer else distance value stays 0
             if type != 0:
-                sleep(.02)
+                sleep(.04)
             else :
                 sleep(.1)
             #28-31
@@ -202,12 +207,12 @@ class Driver:
                 hit = 1
                 sleep(.1)
                 print("hit")
-            elif (hit == 1 and counter > 15) and info[29] < 2400:
+            elif (hit == 1 and counter > 25) and info[29] < 2400:
                 sleep(.1)
                 self.updateRotCCW()
                 self.robot.stop()
                 return
-            elif (hit == 1 and counter > 15) and info[30] < 2400:
+            elif (hit == 1 and counter > 25) and info[30] < 2400:
                 self.robot.setWheelVelocities(  speed/float(10), -speed/float(10))
                 sleep(.1)
                 self.updateRotCCW()
@@ -232,12 +237,12 @@ class Driver:
                 hit = 1
                 sleep(.1)
                 print("hit")
-            elif (hit == 1 and counter > 15) and info[30] < 2400 :
+            elif (hit == 1 and counter > 25) and info[30] < 2400 :
                 sleep(.1) #empirically adjusted to center on line
                 self.updateRotCW()
                 self.robot.stop()
                 return
-            elif (hit == 1 and counter > 15) == 1 and info[29] < 2400 :
+            elif (hit == 1 and counter > 25) == 1 and info[29] < 2400 :
                 self.robot.setWheelVelocities(-speed/float(10),speed/float(10))
                 sleep(.1)
                 self.updateRotCW()
@@ -320,9 +325,10 @@ class Driver:
                 self.turnRight()
             diff = y - self.ypos
             for z in range(0,diff):
-                self.driveForward(speed, 33)
+                self.driveForward(speed, 41)
                 self.updateXY()
-                print "z:", z, ", x:", self.xpos , ", y:", self.ypos
+                print "z:", z, ", x:", self.xpos , ", y:", self.ypos, ", rot:" , self.orientation
+
             self.robot.stop()
         elif y < self.ypos:
             #head south
@@ -350,9 +356,10 @@ class Driver:
            
             diff = self.ypos - y
             for z in range(0, diff):
-                self.driveForward(speed,33)
+                self.driveForward(speed,41)
                 self.updateXY()
-                print "z:", z, ", x:", self.xpos , ", y:", self.ypos
+                print "z:", z, ", x:", self.xpos , ", y:", self.ypos, ", rot:" , self.orientation
+
             self.robot.stop()
     
         #fix x direction now
@@ -380,10 +387,10 @@ class Driver:
 
             diff = self.xpos - x
             for z in range(0, diff):
-                self.driveForward(speed, 33)
+                self.driveForward(speed, 41)
                 self.updateXY()
                 print " --------------------------------------------"
-                print "z:", z, ", x:", self.xpos , ", y:", self.ypos
+                print "z:", z, ", x:", self.xpos , ", y:", self.ypos, ", rot:" , self.orientation
             self.robot.stop()
         elif x > self.xpos:
            
@@ -407,10 +414,11 @@ class Driver:
                 self.turnRight()
             diff = x -self.xpos
             for z in range(0, diff):
-                self.driveForward(speed, 33)
+                self.driveForward(speed, 41)
                 self.updateXY()
                 print " --------------------------------------------"
-                print "z:", z, ", x:", self.xpos , ", y:", self.ypos
+                print "z:", z, ", x:", self.xpos , ", y:", self.ypos, ", rot:" , self.orientation
+
             self.robot.stop()
             
                           
@@ -440,7 +448,7 @@ class Driver:
     #drive forward, scanning bins
     def driveScan(self, speed = 100):
         
-            self.driveForward(speed, 33)
+            self.driveForward(speed, 41)
             self.updateXY()
            
             #grab frame and process
@@ -452,9 +460,9 @@ class Driver:
             print ( "color = " , color)         
             self.bm.addBin(self.xpos, self.ypos, color)
 
-            self.driveForward(speed, 33)
+            self.driveForward(speed, 41)
             self.updateXY()
-            self.driveForward(speed, 33)
+            self.driveForward(speed, 41)
             self.updateXY()
             self.robot.stop()
             #grab frame and process
@@ -465,9 +473,9 @@ class Driver:
             print ( "color = " ,color)
             self.bm.addBin(self.xpos, self.ypos, color)
 
-            self.driveForward(speed, 33)
+            self.driveForward(speed, 41)
             self.updateXY()
-            self.driveForward(speed, 33)
+            self.driveForward(speed, 41)
             self.updateXY()
             self.robot.stop()
             print "x:", self.xpos , ", y:", self.ypos
