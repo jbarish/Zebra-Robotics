@@ -14,7 +14,7 @@ from camSet import fillCol
 import binmanager
 import sys
 
-def pickObject():
+def pickObject(bm, ignore = False):
     clickImage()
     crop_img = processImage()
     color = findColor(crop_img)
@@ -32,15 +32,15 @@ def pickObject():
        val=0.08
        
        if checkAlign == 1:
-            print("MOVE RIGHT")
+            #print("MOVE RIGHT")
             arm.sendCmd("6")   
             arm.sendCmd(angle) 
        elif checkAlign == 2:
-            print("MOVE LEFT")
+            #print("MOVE LEFT")
             arm.sendCmd("7")
             arm.sendCmd(angle) 
        elif checkAlign == 3:
-            print("BOT TURNS LEFT")
+            #print("BOT TURNS LEFT")
             temp = (0.35 * abs(dist))/(248)
             print("temp = ",temp)
             if temp <= val:
@@ -48,7 +48,7 @@ def pickObject():
             else:
                 driver.turnSlightLeft(temp, speed)
        elif checkAlign == 4:
-            print("BOT TURNS RIGHT")
+            #print("BOT TURNS RIGHT")
             temp = (0.35 * abs(dist))/(248)
             print("temp = ",temp)
             if temp <= val:
@@ -56,10 +56,13 @@ def pickObject():
             else:
                 driver.turnSlightRight(temp, speed)
        elif checkAlign == 0:
-            print("GRAB")
-            arm.sendCmd("3")
-            sleep(3.5)
-            break
+           if True: #if bm.getPosByColor(color)[0] != -1 or ignore == True:              
+                #print("GRAB")
+                arm.sendCmd("3")
+                sleep(4)
+                break
+           else:
+                return color
        elif checkAlign == -1:
             print("BLOCK IS NOT FOUND")
             turnsL = 0
@@ -73,6 +76,7 @@ def pickObject():
                 #sleep(1)
                 clickImage()
                 crop_img = processImage()
+                color = findColor(crop_img)
                 dist = getDist1(crop_img, color)
                 i+=1
 
@@ -91,28 +95,29 @@ def pickObject():
                 #sleep(1)
                 clickImage()
                 crop_img = processImage()
+                color = findColor(crop_img)
                 dist = getDist1(crop_img, color)
                 #i+=1
     return color
 
 
 
-exitY = sys.argv[1]
+exitY = int(sys.argv[1])
 
 bm = binmanager.BinManager()
-driver = driver.Driver(0,0, bm)
-#driver = driver.Driver(3,1, bm)
+#driver = driver.Driver(0,0, bm)
+driver = driver.Driver(3,1, bm)
 arm = armcontrol.ArmControl("/dev/ttyUSB0")
+
 sleep(8)
 #arm.sendCmd("9")
 #sleep(3)
 #driver.driveScan()
-'''
+
 print "++++++++++++++++++++Scanning Bins++++++++++++++++++"
 arm.sendCmd("9")
 #sleep(1)
 driver.driveScan()
-
 
 
 arm.sendCmd("2")
@@ -123,7 +128,7 @@ driver.driveTo(5,6)
 
 #clickImage()
 #crop_img = processImage()
-color = pickObject()
+color = pickObject(bm)
 #sleep(5)
 print "++++++++++++++++++++Driving to First Bin at Pos" ,  bm.getPosByColor(color), "++++++++++++++++++"
 if bm.getPosByColor(color)[0] != -1 :
@@ -132,17 +137,26 @@ if bm.getPosByColor(color)[0] != -1 :
 
    arm.sendCmd("5")
    sleep(0.5)
-else:
-   oddout = bm.getPosByColor(color)
+   print "++++++++++++++++++++Driving to Second Block++++++++++++++++++"
+   driver.driveTo(3,5)
    arm.sendCmd("2")
    #sleep(1)
-print "++++++++++++++++++++Driving to Second Block++++++++++++++++++"
-driver.driveTo(3,5)
-arm.sendCmd("2")
-#sleep(1)
-driver.driveTo(5,5)
+   driver.driveTo(5,5)
 
-color = pickObject()
+else:
+   oddout = driver.getPos()
+   sleep(1)
+   arm.sendCmd("4")
+   sleep(3)
+   print "++++++++++++++++++++Driving to Second Block++++++++++++++++++"
+   arm.sendCmd("2")
+   driver.driveTo(3,6)
+   driver.driveTo(5,5)
+
+   
+   
+
+color = pickObject(bm)
 #sleep(5)
 print "++++++++++++++++++++Driving to 2 Bin at Pos" ,  bm.getPosByColor(color), "++++++++++++++++++"
 if bm.getPosByColor(color)[0] != -1 :
@@ -151,17 +165,24 @@ if bm.getPosByColor(color)[0] != -1 :
 
    arm.sendCmd("5")
    sleep(0.5)
-else:
-   oddout = bm.getPosByColor(color)
-   arm.sendCmd("1")
-   sleep(3)
-print "++++++++++++++++++++Driving to Third Block++++++++++++++++++"
-driver.driveTo(3,4)
-arm.sendCmd("2")
-#sleep(1)
-driver.driveTo(5,4)
+   print "++++++++++++++++++++Driving to Third Block++++++++++++++++++"
+   driver.driveTo(3,4)
+   arm.sendCmd("2")
+   #sleep(1)
+   driver.driveTo(5,4)
 
-color = pickObject()
+else:
+   oddout = driver.getPos()
+   sleep(1)
+   arm.sendCmd("4")
+   sleep(3)
+   print "++++++++++++++++++++Driving to Third Block++++++++++++++++++"
+   arm.sendCmd("2")
+   driver.driveTo(3,5)
+   driver.driveTo(5,4)
+
+
+color = pickObject(bm)
 #sleep(5)
 print "++++++++++++++++++++Driving to 3 Bin at Pos" ,  bm.getPosByColor(color), "++++++++++++++++++"
 if bm.getPosByColor(color)[0] != -1 :
@@ -170,17 +191,24 @@ if bm.getPosByColor(color)[0] != -1 :
 
    arm.sendCmd("5")
    sleep(0.5)
-else:
-   oddout = bm.getPosByColor(color)
-   arm.sendCmd("1")
-   sleep(3)
-print "++++++++++++++++++++Driving to Last Block++++++++++++++++++"
-driver.driveTo(3,3)
-arm.sendCmd("2")
-#sleep(1)
-driver.driveTo(5,3)
+   print "++++++++++++++++++++Driving to Last Block++++++++++++++++++"
+   driver.driveTo(3,3)
+   arm.sendCmd("2")
+   #sleep(1)
+   driver.driveTo(5,3)
 
-color = pickObject()
+else:
+   oddout = driver.getPos()
+   sleep(1)
+   arm.sendCmd("4")
+   sleep(3)
+   print "++++++++++++++++++++Driving to Last Block++++++++++++++++++"
+   arm.sendCmd("2")
+   driver.driveTo(3,4)
+   driver.driveTo(5,3)
+
+
+color = pickObject(bm)
 #sleep(5)
 print "++++++++++++++++++++Driving to 4 Bin at Pos" ,  bm.getPosByColor(color), "++++++++++++++++++"
 if bm.getPosByColor(color)[0] != -1 :
@@ -191,16 +219,23 @@ if bm.getPosByColor(color)[0] != -1 :
 else:
    oddout = bm.getPosByColor(color)
 
-print "++++++++++++++++++++Driving to Odd one Out Block++++++++++++++++++"
+
+   
+print "++++++++++++++++++++Nope! Driving to Odd one Out Block at ", oddout, "++++++++++++++++++"
+'''
 driver.driveTo(oddout[0]-1, oddout[1])
 arm.sendCmd("2")
 #sleep(1)
 driver.driveTo(oddout[0], oddout[1])
-pickObject()
+pickObject(bm, True)
+'''
 #sleep(5)
 #leave
-driver.driveTo(6, 6)
-driver.driveTo(9, 6)
+print "++++++++++++++++++++Driving to exit at ", exitY, "++++++++++++++++++"
+arm.sendCmd("1")
+driver.driveTo(5, exitY)
+driver.driveTo(6, exitY)
+driver.driveTo(9, exitY, 400)
 
 
 '''
@@ -208,5 +243,7 @@ driver.driveTo(9, 6)
 arm.sendCmd("2")
 driver.driveTo(0,1,100)
 #sleep(1)
-pickObject()
+pickObject(bm)
 driver.disable()
+
+'''

@@ -27,6 +27,7 @@ class Driver:
         self.orientation = Direction.NORTH
         self.robot = create.Create(port, 115200,create.FULL_MODE)
         self.bm = binman
+        self.robot.playSong([(46,16), (48, 16), (50, 16), (53, 32), (50, 12), (53, 100)])
 
     #type = 0: use distance only for stopping
     #type = 1: use sensors for stopping, plus dist thresh
@@ -45,7 +46,7 @@ class Driver:
             speedL = speed
             speedR = speed
             currDist+=abs(self.robot.sensors([create.DISTANCE])[19])
-            print ("curr dist = ", currDist, ", desired: ", distance)
+            #print ("curr dist = ", currDist, ", desired: ", distance)
             if (type == 0 or type == 1 )and currDist >= distance :
                 print "----------------------Distance-Based Stop!----------------------"
                 self.robot.stop()
@@ -86,7 +87,7 @@ class Driver:
                                      create.CLIFF_FRONT_LEFT_SIGNAL,
                                      create.CLIFF_FRONT_RIGHT_SIGNAL,
                                      create.CLIFF_RIGHT_SIGNAL])
-            print "BL IR Sensor - " , info[28] , "BR IR Sensor - " , info[31]
+            #print "BL IR Sensor - " , info[28] , "BR IR Sensor - " , info[31]
             if distance-currDist > 6 : #and currDist-startDist > 10:
                 #only inspect when in middle of square, otherwise cross lines mess this up
                 if info[29] < 2400 and info[30] > 2400:
@@ -143,7 +144,7 @@ class Driver:
                              
                          t2 = time.time()
                          
-                         if (t2 - t1) > .5 :
+                         if (t2 - t1) > .2 :
                              print "timed out!!!!!!!!"
                              break
                     '''
@@ -196,7 +197,7 @@ class Driver:
         counter = 0
         print "turning"
         while 1:
-            print counter
+
             self.robot.setWheelVelocities(  -speed/float(10), speed/float(10))
              #28-31
             info = self.robot.sensors([create.CLIFF_LEFT_SIGNAL,
@@ -222,7 +223,7 @@ class Driver:
             counter += 1
 
     def turnRight(self, speed=100):
-        print("turning")
+
         hit = 0
         counter = 0
         while 1:
@@ -302,6 +303,8 @@ class Driver:
         
     #drive to an x and y position on the game board
     def driveTo(self, x, y, speed=100):
+        print "x:", self.xpos , ", y:", self.ypos, ", rot:" , self.orientation
+
         if y > self.ypos:
             #head north
             if self.orientation == 3 :
@@ -491,4 +494,5 @@ class Driver:
         self.robot.toSafeMode()
         self.robot.close()
 
-        
+    def getPos(self):
+        return [self.xpos, self.ypos]

@@ -55,7 +55,7 @@ def fillCol(crop_img):
 def getDist1(crop_img, color):
     min = 1000
     max = -1000
-    print("inside getDist1, color : ",color)
+    #print("inside getDist1, color : ",color)
     a = 230
     b = 250
     if color==3:
@@ -93,48 +93,47 @@ def getDist1(crop_img, color):
     #highlight min and max points   
     #cv2.circle(crop_img, (min,y), 1, (255,255,255), 2)
     #cv2.circle(crop_img, (max,y), 1, (255,255,255), 2)
-    print(min,max)
+    #print(min,max)
     temp = (int)((min+max)/2)
     #draw line at mid of min and max
     '''
     for i in range(250):
         cv2.circle(crop_img, (temp,i), 1, (255,255,255), 1)
     '''
-    print("temp=",temp)
+    #print("temp=",temp)
     dist = temp - 249
-    print("dist=",dist)
+    #print("dist=",dist)
     #cv2.imwrite('new.jpg', crop_img)       
     return dist
 
 def checkAlignment(dist, color):
-    '''
+    
     if color==3:
-        if dist>25 and dist <= 50 and dist != -249:  #right arm
+        if dist>40 and dist <= 55 and dist != -249:  #right arm
             return 1
-        elif dist<-15 and dist >= -60 and dist != -249: #left arm
+        elif dist<-20 and dist >= -35 and dist != -249: #left arm
             return 2
-        elif dist < -60 and dist != -249: #left bot
+        elif dist < -35 and dist != -249: #left bot
             return 3
-        elif dist > 50 and dist != -249: #right bot
+        elif dist > 55 and dist != -249: #right bot
             return 4
-        elif dist>=-15 and dist<=25:
+        elif dist>=-20 and dist<=40:
             return 0
         elif dist == -249:
             return -1
     else:
-    '''
-    if dist>50 and dist <= 90 and dist != -249:  #right arm
-        return 1
-    elif dist<-30 and dist >= -70 and dist != -249: #left arm
-        return 2
-    elif dist < -70 and dist != -249: #left bot
-        return 3
-    elif dist > 90 and dist != -249: #right bot
-        return 4
-    elif dist>=-30 and dist<=50:
-        return 0
-    elif dist == -249:
-        return -1
+        if dist>40 and dist <= 55 and dist != -249:  #right arm
+            return 1
+        elif dist<-25 and dist >= -40 and dist != -249: #left arm
+            return 2
+        elif dist < -40 and dist != -249: #left bot
+            return 3
+        elif dist > 55 and dist != -249: #right bot
+            return 4
+        elif dist>=-25 and dist<=40:
+            return 0
+        elif dist == -249:
+            return -1
 
 '''
 #crop_img = processImage()
