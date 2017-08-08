@@ -234,8 +234,8 @@ pickObject(bm, True)
 print "++++++++++++++++++++Driving to exit at ", exitY, "++++++++++++++++++"
 arm.sendCmd("1")
 driver.driveTo(5, exitY)
-driver.driveTo(6, exitY)
-driver.driveTo(9, exitY, 400)
+#driver.driveTo(6, exitY)
+driver.driveTo(9, exitY, 100, 400)
 
 
 '''

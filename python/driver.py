@@ -18,7 +18,7 @@ class Direction:
     SOUTH =2
     EAST = 3
 
-wheelError = .1
+wheelError = .15
 
 class Driver:
     def __init__(self, x, y, binman,  port="/dev/ttyUSB1"):
@@ -27,7 +27,6 @@ class Driver:
         self.orientation = Direction.NORTH
         self.robot = create.Create(port, 115200,create.FULL_MODE)
         self.bm = binman
-        self.robot.playSong([(46,16), (48, 16), (50, 16), (53, 32), (50, 12), (53, 100)])
 
     #type = 0: use distance only for stopping
     #type = 1: use sensors for stopping, plus dist thresh
@@ -144,7 +143,7 @@ class Driver:
                              
                          t2 = time.time()
                          
-                         if (t2 - t1) > .2 :
+                         if (t2 - t1) > .5 :
                              print "timed out!!!!!!!!"
                              break
                     '''
