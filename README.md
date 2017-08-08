@@ -1,4 +1,9 @@
-# Zebra-Robotics
+# Zebra-Robotics   
+  
+All code is in the Python folder.   
+The other folders are example code in other languages.
+
+
 
 Main.py is the main entry point to the program   
 Armcontrol.py is the serial connection to the arm. Here, commands should be sent to the arm   
