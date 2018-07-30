@@ -31,7 +31,7 @@ class Driver:
     #type = 0: use distance only for stopping
     #type = 1: use sensors for stopping, plus dist thresh
     #type = 2: use sensors for stopping only, no dist thresh
-    def driveForward(self, speed, distance, type = 1):
+    def driveForward(self, speed, distance, type = 1, useFrontSensor=True):
         currDist=0
         startDist=abs(self.robot.sensors([create.DISTANCE])[19])
         startDist=abs(self.robot.sensors([create.DISTANCE])[19])
@@ -87,7 +87,7 @@ class Driver:
                                      create.CLIFF_FRONT_RIGHT_SIGNAL,
                                      create.CLIFF_RIGHT_SIGNAL])
             #print "BL IR Sensor - " , info[28] , "BR IR Sensor - " , info[31]
-            if distance-currDist > 6 : #and currDist-startDist > 10:
+            if distance-currDist > 6 and useFrontSensor: #and currDist-startDist > 10:
                 #only inspect when in middle of square, otherwise cross lines mess this up
                 if info[29] < 2400 and info[30] > 2400:
                      #turned too much right, so turn right wheel hard
@@ -296,9 +296,43 @@ class Driver:
                 self.robot.stop()
                 return
         
-
-
+    #WARNING: Does Not update Position!
+    def driveHalfStraight(self, speed = 100):
+        self.driveForward(speed, 16, 0,False)
+        self.robot.stop()
         
+   def turnLeftBlind(self, speed=100):
+        hit = 0
+        counter = 0
+        print "turning"
+        while 1:
+
+            self.robot.setWheelVelocities(  -speed/float(10), speed/float(10))
+             #28-31
+         
+            if( counter > 100): #figure this number out
+                self.updateRotCCW()
+                self.robot.stop()
+                return
+            sleep(.02)
+            counter += 1
+
+    def turnRightBlind(self, speed=100):
+
+        hit = 0
+        counter = 0
+        while 1:
+            print counter
+            self.robot.setWheelVelocities(  speed/float(10),-speed/float(10))
+             #28-31
+            if( counter > 100): #figure this number out
+                self.updateRotCW()
+                self.robot.stop()
+                return
+
+            sleep(.02)
+            counter += 1
+
         
     #drive to an x and y position on the game board
     def driveTo(self, x, y, speed=100):
